@@ -3,22 +3,25 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-short * unvisitedNodes;
+int * unvisitedNodes;
 int numberOfNodes;
 int ** graph;
 int * graphRows;
 int * weights;
 int * valueOfNodes;
+//int * lastVisisted;
 int numberOfEdges;
 
 int dijkstra(int startNode, int endNode);
 
 int main(int argc, char** argv) {
-  numberOfNodes = 1000;
-  numberOfEdges = 10000;
-  unvisitedNodes =  calloc(numberOfNodes, sizeof(short));
+  int degrees = 100;
+  numberOfNodes = 100000;
+  numberOfEdges = numberOfNodes*degrees;
+  unvisitedNodes =  calloc(numberOfNodes, sizeof(int));
   weights = malloc(sizeof(int)*numberOfEdges);
   valueOfNodes = malloc(sizeof(int)*numberOfNodes);
+  //lastVisited = malloc(sizeof(int)*numberOfNodes);
  
   
   graphRows = malloc(sizeof(int)*2*numberOfEdges);
@@ -28,7 +31,7 @@ int main(int argc, char** argv) {
   }
 
   FILE * fp;
-  fp = fopen("graph_de1_ne3_we2", "r"); //~/../hpc2018/a5_grading/test_data/
+  fp = fopen("/home/hpc2018/a5_grading/test_data/graph_de2_ne5_we2", "r");
   for (int i=0; i<numberOfEdges; i++) {
     int a,b,c;
     fscanf(fp, "%d %d %d", &a, &b, &c);
@@ -39,16 +42,16 @@ int main(int argc, char** argv) {
   fclose(fp);
 
   int shortestPath;
-  shortestPath = dijkstra(1, 17);
+  shortestPath = dijkstra(4, 5);
 
   printf("The shortest path is: %d\n", shortestPath);
-
+  /*
   for (size_t jx=0; jx<numberOfNodes; jx++){
     printf("%d",unvisitedNodes[jx]);
   }
    printf("\n");
-  
-  /*
+  */
+   /*  
   // Initialize the MPI environment
     MPI_Init(NULL, NULL);
 
@@ -71,12 +74,12 @@ int main(int argc, char** argv) {
 
     // Finalize the MPI environment.
     MPI_Finalize();
-  */
+   */
 }
 
 
 int dijkstra(int startNode, int endNode) {
-  int largeTenativeInt = 1e5*numberOfEdges;
+  int largeTenativeInt = 10*numberOfEdges;
   int currentNode;
   for (int i=0; i<numberOfNodes; i++) {
     valueOfNodes[i] = largeTenativeInt;
@@ -84,29 +87,38 @@ int dijkstra(int startNode, int endNode) {
 
   valueOfNodes[startNode] = 0;
   currentNode = startNode;
+
   while (1) {
     for (int i = 0; i<numberOfEdges; i++) {
       if (graph[i][0] == currentNode && unvisitedNodes[graph[i][1]] == 0){
 	int tmpNodeValue = valueOfNodes[currentNode] + weights[i];
-	if (tmpNodeValue < valueOfNodes[currentNode]) {
+	if (tmpNodeValue < valueOfNodes[graph[i][1]]) {
 	  valueOfNodes[graph[i][1]] = valueOfNodes[currentNode] + weights[i];
 	}
       }
    
       if (graph[i][0] > currentNode) {
 	unvisitedNodes[currentNode] = 1;
-	i = numberOfNodes;
+	i = numberOfEdges;
       }
     }
+    unvisitedNodes[currentNode] = 1;
+
+    int tmpLowest = largeTenativeInt;
+    for (int ix=0; ix< numberOfNodes; ix++) {
+      if ( unvisitedNodes[ix] == 0) {	
+	if (valueOfNodes[ix] < largeTenativeInt && valueOfNodes[ix] < tmpLowest) {
+	  tmpLowest = valueOfNodes[ix];
+	  currentNode = ix;
+	}
+      }
+    }
+    //printf("Current node: %d\n Visited: %d \n", currentNode, unvisitedNodes[currentNode]);
     if (unvisitedNodes[endNode] == 1) {
       return valueOfNodes[endNode];
       }
-    unvisitedNodes[currentNode] = 1;
-    int largeNumber = 1e9;
-    for (int ix=0; ix< numberOfNodes; ix++) {
-      if ( valueOfNodes[ix] < largeNumber && unvisitedNodes[ix] == 0) {
-	currentNode = ix;
-      }
+    if ( tmpLowest == 100000) {
+      return 999999;
     }
-} // End Djikstra funtion
+  } // End Djikstra funtion
 }  // after iteratuion now remove current node from unvisited list.
