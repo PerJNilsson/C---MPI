@@ -9,13 +9,12 @@ int ** graph;
 int * graphRows;
 int * weights;
 int * valueOfNodes;
-//int * lastVisisted;
 int numberOfEdges;
-
+int degrees;
 int dijkstra(int startNode, int endNode);
 
 int main(int argc, char** argv) {
-  int degrees = 100;
+  degrees = 1000;
   numberOfNodes = 100000;
   numberOfEdges = numberOfNodes*degrees;
   unvisitedNodes =  calloc(numberOfNodes, sizeof(int));
@@ -31,7 +30,7 @@ int main(int argc, char** argv) {
   }
 
   FILE * fp;
-  fp = fopen("/home/hpc2018/a5_grading/test_data/graph_de2_ne5_we2", "r");
+  fp = fopen("/home/hpc2018/a5_grading/test_data/graph_de3_ne5_we3", "r");
   for (int i=0; i<numberOfEdges; i++) {
     int a,b,c;
     fscanf(fp, "%d %d %d", &a, &b, &c);
@@ -77,6 +76,36 @@ int main(int argc, char** argv) {
    */
 }
 
+int binarySearchFun(int currentNode) {
+    int binary_search = 0;
+    int bs_check = 1;
+    int left = 0; int right = numberOfEdges-1;
+      
+    
+    while (left<=right) {
+      //printf("BS: %d \nCN:%d\n", graph[binary_search][0], currentNode);
+      binary_search = floor((right+left)/2);
+      //printf("%d\n", binary_search);
+      if (graph[binary_search][0] < currentNode) {
+	left = binary_search+1;
+      }
+      else if (graph[binary_search][0] > currentNode) {
+	right = binary_search -1;
+      }
+      else  {// (graph[binary_search][0] == currentNode) {
+	if (binary_search - degrees < 0) {
+	  return 0;
+	}
+	else {
+	  return binary_search-degrees;
+	}
+      }
+    }
+    return 0;
+}
+// TODO: use modulo to find first element of the node
+
+
 
 int dijkstra(int startNode, int endNode) {
   int largeTenativeInt = 10*numberOfEdges;
@@ -87,9 +116,12 @@ int dijkstra(int startNode, int endNode) {
 
   valueOfNodes[startNode] = 0;
   currentNode = startNode;
-
+  
   while (1) {
-    for (int i = 0; i<numberOfEdges; i++) {
+    int binary_search;
+    binary_search = binarySearchFun(currentNode);
+    
+    for (int i = currentNode*degrees; i<currentNode*degrees+degrees; i++) {
       if (graph[i][0] == currentNode && unvisitedNodes[graph[i][1]] == 0){
 	int tmpNodeValue = valueOfNodes[currentNode] + weights[i];
 	if (tmpNodeValue < valueOfNodes[graph[i][1]]) {
@@ -122,3 +154,5 @@ int dijkstra(int startNode, int endNode) {
     }
   } // End Djikstra funtion
 }  // after iteratuion now remove current node from unvisited list.
+
+  
