@@ -1,16 +1,19 @@
 .PHONY : all
 
-EXECS=mpi_exe run
+EXECS= mpi_djik run
 MPICC?=mpicc
 
 
 all : ${EXECS}
 
-mpi_hello_world : mpi_hello_world
-	$(MPICC) -o mpi_exe mpi.c
+mpi_djik : mpi_djik
+	$(MPICC) -o mpi_djik_exe mpi.c
 
 run : run
-	mpirun -n 10 ./mpi_exe
+	@time mpirun -n 10 ./mpi_djik_exe
 
 clean:
 	rm ${EXECS}
+
+gcc_compile : gcc_compile
+	gcc notmpi.c -o gcc_copy -O2
