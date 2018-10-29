@@ -13,6 +13,7 @@ int numberOfEdges;
 int degrees;
 int numberOfProcesses;
 int processID;
+MPI_Status status;
 #define INFINITY_LENGTH 99999999
 
 
@@ -78,35 +79,6 @@ int main(int argc, char** argv) {
   MPI_Finalize();
 
 }
-// Function for binary search if not all nodes are evenly distributed
-int binarySearchFun(int currentNode) {
-    int binary_search = 0;
-    int bs_check = 1;
-    int left = 0; int right = numberOfEdges-1;
-      
-    
-    while (left<=right) {
-      //printf("BS: %d \nCN:%d\n", graph[binary_search][0], currentNode);
-      binary_search = floor((right+left)/2);
-      //printf("%d\n", binary_search);
-      if (graph[binary_search][0] < currentNode) {
-	left = binary_search+1;
-      }
-      else if (graph[binary_search][0] > currentNode) {
-	right = binary_search -1;
-      }
-      else  {// (graph[binary_search][0] == currentNode) {
-	if (binary_search - degrees < 0) {
-	  return 0;
-	}
-	else {
-	  return binary_search-degrees;
-	}
-      }
-    }
-    return 0;
-}
-
 
 int dijkstra(int startNode, int endNode) {
   int largeTenativeInt = INFINITY_LENGTH;
@@ -120,11 +92,14 @@ int dijkstra(int startNode, int endNode) {
   currentNode = startNode;
   int pair[2];
   int tmp_pair[2];
-  int counter =1;
-  while (1) {
-    for (int i = currentNode*degrees; i<currentNode*degrees+degrees; i++) {
-      if (unvisitedNodes[graph[i][1]] == 0){
-	int tmpNodeValue = valueOfNodes[currentNode] + weights[i]; // Put it in two if-cases to make it clearer. Does not make any runtime difference
+
+  for(int node=0; node<numberOfNodes; node++){
+    int startIndex = currentNode*degrees;
+    for (int i = startIndex; i<startIndex+degrees; i++) {
+      if (unvisitedNodes[graph[i][1]] == 0 && graph[i][1]%numberOfProcesses==processID){
+	int tmpNodeValue = valueOfNodes[currentNode] + weights[i]; // Put it in two if-cases to make
+                                                                   // it clearer. Does not make any
+                                                                   // runtime difference
 	if (tmpNodeValue < valueOfNodes[graph[i][1]]) {
 	  valueOfNodes[graph[i][1]] = valueOfNodes[currentNode] + weights[i];
 	}
@@ -141,11 +116,12 @@ int dijkstra(int startNode, int endNode) {
     pair[0] = tmpLowest; // save the lowest value form each iteration
     pair[1] = tmpNode; // saves the current node with the lowest value,
 
-    MPI_Status status;
   
     if (processID != 0) {
-      MPI_Send(pair, 2, MPI_INT, 0, 1, MPI_COMM_WORLD); /* Each MPI node has different tmpLowest and tmpNode. Now need to send to master to find
-                                                           which one we should pick of all the MPI workers */
+      MPI_Send(pair, 2, MPI_INT, 0, 1, MPI_COMM_WORLD); /* Each MPI node has different tmpLowest and
+                                                           tmpNode. Now need to send to master to
+                                                           find which one we should pick of all the
+                                                           MPI workers */
     }else {
       for (int k=1; k<numberOfProcesses; k++) {
 	MPI_Recv(tmp_pair, 2, MPI_INT,k, 1, MPI_COMM_WORLD, &status);
@@ -156,17 +132,16 @@ int dijkstra(int startNode, int endNode) {
       }
     }
     MPI_Bcast(pair, 2, MPI_INT, 0, MPI_COMM_WORLD);
-    
+
+    currentNode = pair[1];    
     unvisitedNodes[currentNode] = 1;
-    currentNode = pair[1];
     valueOfNodes[currentNode]= pair[0];
     
     if (unvisitedNodes[endNode] == 1) {
       return valueOfNodes[endNode];
     }
-    if (counter == numberOfEdges*numberOfEdges) { // If need to check n*n for every iteration, worst case scenario
-      return INFINITY_LENGTH;
-    }
-    counter++;
+
   }
+
+  return -1;
 }   // End Djikstra funtion
