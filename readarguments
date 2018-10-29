@@ -1,0 +1,21 @@
+  
+  int start_node = strtol(argv[4], NULL, 10);
+  int end_node = strtol(argv[5], NULL, 10);
+
+  char * filename = argv[6];
+     
+  FILE * fp;
+  fp = fopen(filename, "r");
+  
+  int length = strlen(filename);
+  int degree_exp = filename[length-9] - '0';
+  int nodes_exp = filename[length-5] - '0';
+  int weights_exp = filename[length-1] - '0';
+
+
+  degrees = pow(10, degree_exp);
+  numberOfNodes = pow(10, nodes_exp);
+  numberOfEdges = numberOfNodes*degrees;
+  unvisitedNodes =  calloc(numberOfNodes, sizeof(int));
+  weights = malloc(sizeof(int)*numberOfEdges);
+  valueOfNodes = malloc(sizeof(int)*numberOfNodes);
