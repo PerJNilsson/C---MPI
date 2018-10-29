@@ -15,13 +15,24 @@ int degrees;
 int dijkstra(int startNode, int endNode);
 
 int main(int argc, char** argv) {
-  degrees = 10;
-  numberOfNodes = 1000;
+
+  
+  char * filename = "/home/hpc2018/a5_grading/test_data/graph_de1_ne3_we2";
+  FILE * fp;
+  fp = fopen(filename, "r");
+  
+  int string_length = strlen(filename);
+  int degree_exp = filename[length-9] - '0';
+  int nodes_exp = filename[length-5] - '0';
+  int weights_exp = filename[length-1] - '0';
+
+
+  degrees = pow(10, degree_exp);
+  numberOfNodes = pow(10, nodes_exp);
   numberOfEdges = numberOfNodes*degrees;
   unvisitedNodes =  calloc(numberOfNodes, sizeof(int));
   weights = malloc(sizeof(int)*numberOfEdges);
   valueOfNodes = malloc(sizeof(int)*numberOfNodes);
-  //lastVisited = malloc(sizeof(int)*numberOfNodes);
  
   
   graphRows = malloc(sizeof(int)*2*numberOfEdges);
@@ -30,8 +41,6 @@ int main(int argc, char** argv) {
     graph[i] = graphRows + j;
   }
 
-  FILE * fp;
-  fp = fopen("/home/hpc2018/a5_grading/test_data/graph_de1_ne3_we2", "r");
   for (int i=0; i<numberOfEdges; i++) {
     int a,b,c;
     fscanf(fp, "%d %d %d", &a, &b, &c);
