@@ -35,6 +35,24 @@ int main(int argc, char** argv) {
   
   degrees = 10;
   numberOfNodes = 1000;
+
+  int start_node = strtol(argv[4], NULL, 10);
+  int end_node = strtol(argv[5], NULL, 10);
+
+  char * filename = argv[6];
+     
+  FILE * fp;
+  fp = fopen(filename, "r");
+  
+  int string_length = strlen(filename);
+  int degree_exp = filename[length-9] - '0';
+  int nodes_exp = filename[length-5] - '0';
+  int weights_exp = filename[length-1] - '0';
+
+
+  degrees = pow(10, degree_exp);
+  numberOfNodes = pow(10, nodes_exp);
+>>>>>>> a2f1b8864e3cd7c3757573c28918dcc08a50bbca
   numberOfEdges = numberOfNodes*degrees;
   unvisitedNodes =  calloc(numberOfNodes, sizeof(int));
   weights = malloc(sizeof(int)*numberOfEdges);
@@ -47,8 +65,6 @@ int main(int argc, char** argv) {
     graph[i] = graphRows + j;
   }
 
-  FILE * fp;
-  fp = fopen("/home/hpc2018/a5_grading/test_data/graph_de1_ne3_we2", "r");
   for (int i=0; i<numberOfEdges; i++) {
     int a,b,c;
     fscanf(fp, "%d %d %d", &a, &b, &c);
