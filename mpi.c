@@ -11,6 +11,7 @@ int * weights;
 int * valueOfNodes;
 int numberOfEdges;
 int degrees;
+#define INFINITY_LENGTH 99999999
 int dijkstra(int startNode, int endNode);
 
 int main(int argc, char** argv) {
@@ -65,7 +66,7 @@ int main(int argc, char** argv) {
     MPI_Finalize();
    
 }
-
+// Function for binary search if not all nodes are evenly distributed
 int binarySearchFun(int currentNode) {
     int binary_search = 0;
     int bs_check = 1;
@@ -96,7 +97,7 @@ int binarySearchFun(int currentNode) {
 
 
 int dijkstra(int startNode, int endNode) {
-  int largeTenativeInt = 10*numberOfEdges;
+  int largeTenativeInt = INFINITY_LENGTH;
   int currentNode;
   for (int i=0; i<numberOfNodes; i++) {
     valueOfNodes[i] = largeTenativeInt;
@@ -108,34 +109,28 @@ int dijkstra(int startNode, int endNode) {
   while (1) {
     
     for (int i = currentNode*degrees; i<currentNode*degrees+degrees; i++) {
-      if (graph[i][0] == currentNode && unvisitedNodes[graph[i][1]] == 0){
-	int tmpNodeValue = valueOfNodes[currentNode] + weights[i];
+      if (unvisitedNodes[graph[i][1]] == 0){
+	int tmpNodeValue = valueOfNodes[currentNode] + weights[i]; // Put it in two if-cases to make it clearer. Does not make any runtime difference
 	if (tmpNodeValue < valueOfNodes[graph[i][1]]) {
 	  valueOfNodes[graph[i][1]] = valueOfNodes[currentNode] + weights[i];
 	}
       }
    
-      if (graph[i][0] > currentNode) {
-	unvisitedNodes[currentNode] = 1;
-	i = numberOfEdges;
-      }
     }
     unvisitedNodes[currentNode] = 1;
 
-    int tmpLowest = largeTenativeInt;
+    int tmpLowest = INFINITY_LENGTH;
     for (int ix=0; ix< numberOfNodes; ix++) {
-      if ( unvisitedNodes[ix] == 0) {	
-	if (valueOfNodes[ix] < largeTenativeInt && valueOfNodes[ix] < tmpLowest) {
-	  tmpLowest = valueOfNodes[ix];
-	  currentNode = ix;
-	}
+      if ( unvisitedNodes[ix] == 0 && valueOfNodes[ix] < tmpLowest) {
+	tmpLowest = valueOfNodes[ix];
+	currentNode = ix;
       }
     }
     if (unvisitedNodes[endNode] == 1) {
       return valueOfNodes[endNode];
       }
-    if ( tmpLowest == 100000) {
-      return 999999;
+    if ( tmpLowest == INFINITY_LENGTH) {
+      return INFINITY_LENGTH;
     }
   }
 }   // End Djikstra funtion
