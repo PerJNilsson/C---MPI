@@ -16,8 +16,11 @@ int dijkstra(int startNode, int endNode);
 
 int main(int argc, char** argv) {
 
-  
-  char * filename = "/home/hpc2018/a5_grading/test_data/graph_de1_ne3_we2";
+  int start_node = strtol(argv[4], NULL, 10);
+  int end_node = strtol(argv[5], NULL, 10);
+
+  char * filename = argv[6];
+     
   FILE * fp;
   fp = fopen(filename, "r");
   
