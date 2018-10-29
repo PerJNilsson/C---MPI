@@ -10,7 +10,7 @@ mpi_djik : mpi_djik
 	$(MPICC) -o mpi_djik_exe mpi.c
 
 run : run
-	@time mpirun -n 10 ./mpi_djik_exe
+	@time mpirun -n 4 ./mpi_djik_exe
 
 clean:
 	rm ${EXECS}

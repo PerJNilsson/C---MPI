@@ -11,17 +11,34 @@ int * weights;
 int * valueOfNodes;
 int numberOfEdges;
 int degrees;
+int numberOfProcesses;
+int processID;
 #define INFINITY_LENGTH 99999999
+
+
 int dijkstra(int startNode, int endNode);
 
 int main(int argc, char** argv) {
+
+  // ***** Initializing the MPI ***** //
+  MPI_Init(NULL, NULL);
+
+  // Get the number of processes
+  MPI_Comm_size(MPI_COMM_WORLD, &numberOfProcesses);
+
+  // Get the rank of the process
+  MPI_Comm_rank(MPI_COMM_WORLD, &processID);
+
+  for (int i=0; i<numberOfProcesses; i+=numberOfProcesses) {
+    printf("ProcessId: %d\n", processID);
+  }
+  
   degrees = 10;
   numberOfNodes = 1000;
   numberOfEdges = numberOfNodes*degrees;
   unvisitedNodes =  calloc(numberOfNodes, sizeof(int));
   weights = malloc(sizeof(int)*numberOfEdges);
   valueOfNodes = malloc(sizeof(int)*numberOfNodes);
-  //lastVisited = malloc(sizeof(int)*numberOfNodes);
  
   
   graphRows = malloc(sizeof(int)*2*numberOfEdges);
@@ -45,26 +62,8 @@ int main(int argc, char** argv) {
   shortestPath = dijkstra(9, 82);
 
   printf("The shortest path is: %d\n", shortestPath);
-     
-  // Initialize the MPI environment
-    MPI_Init(NULL, NULL);
-
-    // Get the number of processes
-    int world_size;
-    MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
-    // Get the rank of the process
-    int world_rank;
-    MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-
-    // Get the name of the processor
-    char processor_name[MPI_MAX_PROCESSOR_NAME];
-    int name_len;
-    MPI_Get_processor_name(processor_name, &name_len);
-
     // Finalize the MPI environment.
     MPI_Finalize();
-   
 }
 // Function for binary search if not all nodes are evenly distributed
 int binarySearchFun(int currentNode) {
@@ -105,10 +104,12 @@ int dijkstra(int startNode, int endNode) {
 
   valueOfNodes[startNode] = 0;
   currentNode = startNode;
-  
-  while (1) {
+  int pair[2];
+  int tmp_pair[2] = {0, 0};
     
+  while (1) {
     for (int i = currentNode*degrees; i<currentNode*degrees+degrees; i++) {
+      // if (i%comm_size != rank) continue;    
       if (unvisitedNodes[graph[i][1]] == 0){
 	int tmpNodeValue = valueOfNodes[currentNode] + weights[i]; // Put it in two if-cases to make it clearer. Does not make any runtime difference
 	if (tmpNodeValue < valueOfNodes[graph[i][1]]) {
@@ -120,10 +121,25 @@ int dijkstra(int startNode, int endNode) {
     unvisitedNodes[currentNode] = 1;
 
     int tmpLowest = INFINITY_LENGTH;
-    for (int ix=0; ix< numberOfNodes; ix++) {
+    for (int ix=processID; ix< numberOfNodes; ix+=numberOfProcesses) {
       if ( unvisitedNodes[ix] == 0 && valueOfNodes[ix] < tmpLowest) {
-	tmpLowest = valueOfNodes[ix];
-	currentNode = ix;
+	tmpLowest = valueOfNodes[ix]; // save the temporary lowest value
+	currentNode = ix; // saves the node with the temporary lowest value,
+      }
+    }
+    pair[0] = tmpLowest; // save the lowest value form each iteration
+    pair[1] = currentNode; // saves the current node with the lowest value,
+    
+    MPI_Status status;
+    if (processID != 0) {
+      MPI_Send(pair, 2, MPI_INT, 0, 1, MPI_COMM_WORLD);
+    }else {
+      for (int k=1; k<numberOfProcesses; k++) {
+	MPI_Recv(tmp_pair, 2, MPI_INT,k, 1, MPI_COMM_WORLD, &status);
+	if (tmp_pair[0] < pair[1]) {
+	  pair[0] = tmp_pair[0];
+	  pair[1] = tmp_pair[1];
+	}
       }
     }
     if (unvisitedNodes[endNode] == 1) {
