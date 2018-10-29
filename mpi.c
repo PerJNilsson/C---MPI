@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
   FILE * fp;
   fp = fopen(filename, "r");
   
-  int string_length = strlen(filename);
+  int length = strlen(filename);
   int degree_exp = filename[length-9] - '0';
   int nodes_exp = filename[length-5] - '0';
   int weights_exp = filename[length-1] - '0';
@@ -52,7 +52,6 @@ int main(int argc, char** argv) {
 
   degrees = pow(10, degree_exp);
   numberOfNodes = pow(10, nodes_exp);
->>>>>>> a2f1b8864e3cd7c3757573c28918dcc08a50bbca
   numberOfEdges = numberOfNodes*degrees;
   unvisitedNodes =  calloc(numberOfNodes, sizeof(int));
   weights = malloc(sizeof(int)*numberOfEdges);
