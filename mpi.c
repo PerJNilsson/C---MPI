@@ -3,6 +3,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
+
 int * unvisitedNodes;
 int numberOfNodes;
 int ** graph;
@@ -14,7 +16,6 @@ int degrees;
 int numberOfProcesses;
 int processID;
 MPI_Status status;
-#define INFINITY_LENGTH 99999999
 
 
 int dijkstra(int startNode, int endNode);
@@ -81,7 +82,7 @@ int main(int argc, char** argv) {
 }
 
 int dijkstra(int startNode, int endNode) {
-  int largeTenativeInt = INFINITY_LENGTH;
+  int largeTenativeInt = INT_MAX;
   int currentNode;
   int tmpNode;
   for (int i=0; i<numberOfNodes; i++) {
@@ -96,7 +97,7 @@ int dijkstra(int startNode, int endNode) {
   for(int node=0; node<numberOfNodes; node++){
     int startIndex = currentNode*degrees;
     for (int i = startIndex; i<startIndex+degrees; i++) {
-      if (unvisitedNodes[graph[i][1]] == 0 && graph[i][1]%numberOfProcesses==processID){
+      if (unvisitedNodes[graph[i][1]] == 0 && graph[i][1]%numberOfProcesses==processID){ 
 	int tmpNodeValue = valueOfNodes[currentNode] + weights[i]; // Put it in two if-cases to make
                                                                    // it clearer. Does not make any
                                                                    // runtime difference
@@ -106,7 +107,7 @@ int dijkstra(int startNode, int endNode) {
       }
     }
     
-    int tmpLowest = INFINITY_LENGTH;
+    int tmpLowest = INT_MAX;
     for (int ix=processID; ix< numberOfNodes; ix+=numberOfProcesses) {
       if ( unvisitedNodes[ix] == 0 && valueOfNodes[ix] < tmpLowest) {
 	tmpLowest = valueOfNodes[ix]; // save the temporary lowest value
@@ -139,6 +140,10 @@ int dijkstra(int startNode, int endNode) {
     
     if (unvisitedNodes[endNode] == 1) {
       return valueOfNodes[endNode];
+    }
+
+    if (valueOfNodes[currentNode] == INT_MAX){
+      return INT_MAX;
     }
 
   }
