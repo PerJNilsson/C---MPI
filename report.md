@@ -1,4 +1,4 @@
-<h1> Assignment 5 - hpcg031 </h2>
+<h1> Assignment 5 - hpcg031 </h1>
 
 <h2> Program layout </h2>
 
