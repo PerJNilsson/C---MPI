@@ -12,7 +12,7 @@ The other parallelizaiton is the one where we iterate through the whole list, fi
 the node with the lowest value and checking that it is in the unvisited list. This is done by all workers sending their
 candidate to the master where the master iterates through all candidate chosing the lowest and then broadcast the chosen node
 and its value to all workers. 
-|---------+----+-----+------+-----+------|
+
 
 <h2> Results </h2>
 
