@@ -15,10 +15,12 @@ int numberOfEdges;
 int degrees;
 int numberOfProcesses;
 int processID;
+int * fromNode;
 MPI_Status status;
 
 
 int dijkstra(int startNode, int endNode);
+void prepend(char* s, const char* t);
 
 int main(int argc, char** argv) {
   
@@ -48,8 +50,10 @@ int main(int argc, char** argv) {
   unvisitedNodes =  calloc(numberOfNodes, sizeof(int));
   weights = malloc(sizeof(int)*numberOfEdges);
   valueOfNodes = malloc(sizeof(int)*numberOfNodes);
- 
-  //printf("degrees: %d \nnodes: %d\nedges: %d\n",degrees, numberOfNodes, numberOfEdges);
+  fromNode = calloc(numberOfNodes, sizeof(int));
+
+  
+
 
   graphRows = malloc(sizeof(int)*2*numberOfEdges);
   graph = malloc(sizeof(int*)*numberOfEdges);
@@ -59,7 +63,7 @@ int main(int argc, char** argv) {
 
 
   FILE * fp;
-  fp = fopen(filename, "r"); // ("/home/hpc2018/a5_grading/test_data/graph_de1_ne3_we2"
+  fp = fopen(filename, "r");
   for (int i=0; i<numberOfEdges; i++) {
     int a,b,c;
     fscanf(fp, "%d %d %d", &a, &b, &c);
@@ -72,10 +76,34 @@ int main(int argc, char** argv) {
   int shortestPath;
   shortestPath = dijkstra(start_node, end_node);
 
+  char path_str[200];
+  char tmp_str[200];
+  
   if (processID == 0) {
-    printf("The shortest path is: %d\n", shortestPath);
+    printf("Shortest path of length %d:\n", shortestPath);
+    sprintf(tmp_str, "%d", end_node);
+    strcpy(path_str, tmp_str);
+        
   }
 
+  int origin = end_node;
+
+  
+  while(origin != start_node){
+    MPI_Bcast(&fromNode[origin], 1, MPI_INT, origin%numberOfProcesses, MPI_COMM_WORLD);
+    origin = fromNode[origin];
+    if(processID == 0){
+      sprintf(tmp_str, "%d -> ", origin);
+      prepend(path_str, tmp_str);
+    }
+  }
+
+
+  if(processID == 0){
+    printf("%s\n",path_str);
+  }
+
+  
   // Finalize the MPI environment.
   MPI_Finalize();
 
@@ -97,21 +125,28 @@ int dijkstra(int startNode, int endNode) {
   for(int node=0; node<numberOfNodes; node++){
     int startIndex = currentNode*degrees;
     for (int i = startIndex; i<startIndex+degrees; i++) {
-      if (unvisitedNodes[graph[i][1]] == 0 && graph[i][1]%numberOfProcesses==processID){ 
+      
+      if (unvisitedNodes[graph[i][1]] == 0 &&
+          (graph[i][1]%numberOfProcesses==processID || processID==0)){ 
 	int tmpNodeValue = valueOfNodes[currentNode] + weights[i]; // Put it in two if-cases to make
                                                                    // it clearer. Does not make any
                                                                    // runtime difference
 	if (tmpNodeValue < valueOfNodes[graph[i][1]]) {
-	  valueOfNodes[graph[i][1]] = valueOfNodes[currentNode] + weights[i];
-	}
+	  valueOfNodes[graph[i][1]] = valueOfNodes[currentNode] + weights[i];          
+          fromNode[graph[i][1]] = currentNode;
+        }
+
       }
+      
     }
+  
+  
     
     int tmpLowest = INT_MAX;
     for (int ix=processID; ix< numberOfNodes; ix+=numberOfProcesses) {
       if ( unvisitedNodes[ix] == 0 && valueOfNodes[ix] < tmpLowest) {
-	tmpLowest = valueOfNodes[ix]; // save the temporary lowest value
-	tmpNode = ix; // saves the node with the temporary lowest value,
+        tmpLowest = valueOfNodes[ix]; // save the temporary lowest value
+        tmpNode = ix; // saves the node with the temporary lowest value,
       }
     }
     pair[0] = tmpLowest; // save the lowest value form each iteration
@@ -125,10 +160,10 @@ int dijkstra(int startNode, int endNode) {
                                                            MPI workers */
     }else {
       for (int k=1; k<numberOfProcesses; k++) {
-	MPI_Recv(tmp_pair, 2, MPI_INT,k, 1, MPI_COMM_WORLD, &status);
-	if (tmp_pair[0] < pair[0]) {
-	  pair[0] = tmp_pair[0];
-	  pair[1] = tmp_pair[1];
+        MPI_Recv(tmp_pair, 2, MPI_INT,k, 1, MPI_COMM_WORLD, &status);
+        if (tmp_pair[0] < pair[0]) {
+          pair[0] = tmp_pair[0];
+          pair[1] = tmp_pair[1];
         }
       }
     }
@@ -150,3 +185,18 @@ int dijkstra(int startNode, int endNode) {
 
   return -1;
 }   // End Djikstra funtion
+
+
+
+void prepend(char* s, const char* t)
+{
+    size_t len = strlen(t);
+    size_t i;
+
+    memmove(s + len, s, strlen(s) + 1);
+
+    for (i = 0; i < len; ++i)
+    {
+        s[i] = t[i];
+    }
+}

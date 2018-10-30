@@ -6,7 +6,7 @@ MPICC?=mpicc
 all : dijkstra
 
 
-dijkstra:
+dijkstra: mpi.c
 	$(MPICC) -o dijkstra mpi.c -lm
 
 run1 : 
