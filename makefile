@@ -1,16 +1,12 @@
 .PHONY : all
 
-EXECS= dijkstra
 MPICC?=mpicc
 
 
-all: dijkstra
+all : dijkstra
 
 
 dijkstra:
-	$(MPICC) -o dijkstra mpi.c -lm
-
-dijkstra :
 	$(MPICC) -o dijkstra mpi.c -lm
 
 run1 : 
@@ -29,13 +25,16 @@ run5 :
 	time -p mpirun -n 20 ./dijkstra 4 5 /home/hpc2018/a5_grading/test_data/graph_de3_ne5_we3 
 
 clean:
-	rm -rf dijkstra; rm -rf dijkstra.tar.gz; rm -rf reports; rm -rf extracted;
+	rm -rf dijkstra
 
-compress:
-	@mkdir dijkstra && cp mpi.c dijkstra/mpi.c && cp makefile dijkstra/makefile && cp report.md dijkstra/report.md;\
-	cd dijkstra && tar czvf ../dijkstra.tar.gz . && cd -
-submit:
-	/home/hpc2018/a5_grading/check_submission.py /home/hpcuser071/assignment5/dijkstra.tar.gz
+cleantest :
+	rm -rf hpcg031.tar.gz reports extracted
+
+compress :
+	tar -cvf hpcg031.tar.gz report.md mpi.c makefile
+
+submit :
+	@/home/hpc2018/a5_grading/check_submission.py hpcg031.tar.gz
 
 gcc_compile : gcc_compile
 	gcc notmpi.c -o gcc_copy -O2
