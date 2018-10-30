@@ -34,7 +34,7 @@ compress :
 	tar -cvf hpcgp031.tar.gz report.md mpi.c makefile
 
 submit :
-	@/home/hpc2018/a5_grading/check_submission.py hpcg031.tar.gz
+	@/home/hpc2018/a5_grading/check_submission.py hpcgs031.tar.gz
 
 gcc_compile : gcc_compile
 	gcc notmpi.c -o gcc_copy -O2
