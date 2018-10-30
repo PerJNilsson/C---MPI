@@ -1,5 +1,5 @@
 <h2> Results </h2>
-
+|-|-|-|-|-|-|
 | Degrees            |	10		     |  100		  |	100		  | 	100		  |	1000		  |
 | Number of vertices |	1000		     | 	10000		  | 	10000		  | 	100000		  | 	100000		  |
 | Maximal weight     |  100 		     |	100  		  |	100 		  |	100 		  |	1000		  |
@@ -8,3 +8,4 @@
 | Start point        |	9    		     |	17 		  |	17 		  |    	107 		  |	4		  |
 | End point          |	82 		     |	40		  | 	18 		  | 	0 		  |	5		  |
 | Time in seconds    |	1.2 		     |	6.8 		  |	3.1 		  | 	98 		  |	256		  |
+| Our results 	     | 
