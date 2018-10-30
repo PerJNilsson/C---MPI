@@ -1,8 +1,8 @@
 <h2> Program layout </h2>
 
-Starting out by declaring some variables that will be necessary later on in the program and catching the file name where we
+We are starting out by declaring some variables that will be necessary later on in the program and catching the file name where we
 extract information about the number of node, edges and degrees. Next we initialize the MPI and get the number of processes
-and their ID. We will then read the file specified in the arguments and save into a 2 dimentional array.
+and their ID. We will then read the file specified in the arguments and save into a 2 dimentional array, and the edge weights in an 1-dimentional array.
 
 After this we run the funtion dijkstra. In our dijkstra-funtion we have parallelized two different part. The first part is
 the one which check if the new path is better than previous by checking the current node with its neighbours. To be able to
