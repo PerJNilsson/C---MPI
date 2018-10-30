@@ -28,10 +28,10 @@ clean:
 	rm -rf dijkstra
 
 cleantest :
-	rm -rf hpcg031.tar.gz reports extracted
+	rm -rf hpcgp031.tar.gz reports extracted
 
 compress :
-	tar -cvf hpcg031.tar.gz report.md mpi.c makefile
+	tar -cvf hpcgp031.tar.gz report.md mpi.c makefile
 
 submit :
 	@/home/hpc2018/a5_grading/check_submission.py hpcg031.tar.gz
